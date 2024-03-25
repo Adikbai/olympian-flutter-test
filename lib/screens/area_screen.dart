@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:lottie/lottie.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -36,7 +37,9 @@ class AreaScreen extends StatelessWidget {
                   ? 'Открыть выбранное слово. Нельзя открыть последнее слово'
                   : 'Открыть выбранное слово. Выберете ячейку',
             ),
-            const SizedBox(height: 66,),
+            const SizedBox(
+              height: 66,
+            ),
           ],
         ),
         appBar: AppBar(
@@ -138,34 +141,55 @@ class __NestedScrollState extends State<_NestedScroll> {
                                 (widthOffset / wordWidth).floor() <= index;
                             final showStartLeaf =
                                 (widthOffset / wordWidth).floor() == index;
-                            return AnimatedBuilder(
-                              animation: _scrollCtrl,
-                              builder: (context, child) {
-                                final page =
-                                    max((widthOffset / wordWidth).floor(), 0);
-                                final position = _recalculateOffset(
-                                  maxItems: groups[page].length,
-                                  depth: word.depth,
-                                );
 
-                                return AnimatedContainer(
-                                  width: wordWidth,
-                                  height: itemHeight,
-                                  duration: const Duration(milliseconds: 150),
-                                  margin: EdgeInsets.only(
-                                    right: 0,
-                                    top: position,
-                                    bottom: position,
+                            return Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                AnimatedBuilder(
+                                  animation: _scrollCtrl,
+                                  builder: (context, child) {
+                                    final page = max(
+                                        (widthOffset / wordWidth).floor(), 0);
+                                    final position = _recalculateOffset(
+                                      maxItems: groups[page].length,
+                                      depth: word.depth,
+                                    );
+
+                                    return AnimatedContainer(
+                                      width: wordWidth,
+                                      height: itemHeight,
+                                      duration:
+                                          const Duration(milliseconds: 150),
+                                      margin: EdgeInsets.only(
+                                        right: 0,
+                                        top: position,
+                                        bottom: position,
+                                      ),
+                                      child: child,
+                                    );
+                                  },
+                                  child: WordItem(
+                                    key: key,
+                                    word: word,
+                                    showEndLeaf: showEndLeaf,
+                                    showStartLeaf: showStartLeaf,
                                   ),
-                                  child: child,
-                                );
-                              },
-                              child: WordItem(
-                                key: key,
-                                word: word,
-                                showEndLeaf: showEndLeaf,
-                                showStartLeaf: showStartLeaf,
-                              ),
+                                ),
+                                if (!vm.isFirstWordCorrect &&
+                                    index == 0 &&
+                                    group.indexOf(word) == 0)
+                                  Positioned(
+                                    top: itemHeight/4,
+                                    left: wordWidth/3,
+                                    child: IgnorePointer(
+                                      child: Lottie.network(
+                                        'https://raw.githubusercontent.com/imakarov/olympian-flutter-test/master/Animation.json',
+                                        width: 80,
+                                        height: 80,
+                                      ),
+                                    ),
+                                  )
+                              ],
                             );
                           }).toList(),
                           Container(
@@ -215,7 +239,7 @@ class __NestedScrollState extends State<_NestedScroll> {
                 ),
               ),
             ),
-          )
+          ),
         ],
       ),
     );

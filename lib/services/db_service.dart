@@ -24,23 +24,30 @@ class DbService {
     await initDb();
   }
 
+  
+
   initDb() async {
     final version = _box.get('levelsVersion', defaultValue: '0');
     var data = config.getLevels();
 
-    if (int.tryParse(version) == int.tryParse(data['levelsVersion']) || data['levels'] == null) {
+    if (int.tryParse(version) == int.tryParse(data['levelsVersion']) ||
+        data['levels'] == null) {
       return;
     }
 
     final List<LevelModel> newLevels = [];
     final List<LevelModel> savedLevels = getLevels();
+    
+
+
 
     for (final levelJson in data['levels']) {
       newLevels.add(LevelModel.fromJson(levelJson));
     }
 
     for (final newLevel in newLevels) {
-      final savedLevel = savedLevels.firstWhere((e) => e.id == newLevel.id, orElse: () {
+      final savedLevel =
+          savedLevels.firstWhere((e) => e.id == newLevel.id, orElse: () {
         newLevel.state = _getLevelState(newLevel.id);
         newLevel.data = newLevel.data.map((e) {
           e.state = _getWordState(word: e, level: newLevel);
@@ -54,7 +61,8 @@ class DbService {
       if (newLevel.wordsHash != savedLevel.wordsHash) {
         final index = newLevels.indexOf(newLevel);
 
-        if (savedLevel.state == LevelState.started || savedLevel.state == LevelState.available) {
+        if (savedLevel.state == LevelState.started ||
+            savedLevel.state == LevelState.available) {
           newLevels[index].state = LevelState.available;
         } else {
           newLevels[index].state = savedLevel.state;
@@ -66,7 +74,8 @@ class DbService {
       }
     }
 
-    final activeIndex = newLevels.indexWhere((e) => e.id == _getLastActiveLevelId(savedLevels));
+    final activeIndex =
+        newLevels.indexWhere((e) => e.id == _getLastActiveLevelId(savedLevels));
     if (activeIndex != -1) {
       newLevels.asMap().forEach((index, element) {
         if (index < activeIndex) {
@@ -96,7 +105,10 @@ class DbService {
 
   int _getLastActiveLevelId(List<LevelModel> savedLevels) {
     try {
-      return savedLevels.lastWhere((e) => e.state == LevelState.started || e.state == LevelState.available).id;
+      return savedLevels
+          .lastWhere((e) =>
+              e.state == LevelState.started || e.state == LevelState.available)
+          .id;
     } catch (e) {
       return 100;
     }
@@ -107,7 +119,6 @@ class DbService {
     for (final key in _levelBox.keys) {
       result.add(LevelModel.fromJson(_levelBox.get(key)));
     }
-
     return result;
   }
 
@@ -131,7 +142,8 @@ class DbService {
 
   /// @Deprecated
   LevelState _getLevelState(int id) {
-    final result = stateFromString(_box.get('level_${id}_state', defaultValue: 'disabled'));
+    final result = stateFromString(
+        _box.get('level_${id}_state', defaultValue: 'disabled'));
     _box.delete('level_${id}_state');
     return result;
   }
@@ -139,7 +151,8 @@ class DbService {
   /// @Deprecated
   _getWordState({required WordModel word, required LevelModel level}) {
     final wordIndex = level.data.indexOf(word);
-    final result = wordStateFromString(_box.get('word_${level.id}_$wordIndex', defaultValue: 'idle'));
+    final result = wordStateFromString(
+        _box.get('word_${level.id}_$wordIndex', defaultValue: 'idle'));
     _box.delete('word_${level.id}_$wordIndex');
     return result;
   }

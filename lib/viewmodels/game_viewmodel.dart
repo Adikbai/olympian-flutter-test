@@ -49,6 +49,8 @@ class GameViewModel with ChangeNotifier {
 
   bool isFirstLevelComplete = false;
 
+  bool isFirstWordCorrect = false;
+
   //TODO: закомментированный код показа рекламы после 5 неверных попыток
   // bool get showWrongAnswerDialog => wrongAnswerCount >= maxWrongAnswerCount;
   bool get showWrongAnswerDialog => false;
@@ -62,6 +64,8 @@ class GameViewModel with ChangeNotifier {
 
     // Дефолтный уровень
     activeLevel = _levels.first;
+
+    isFirstWordCorrect = _levels.first.data[1].state ==  WordState.correct;
 
     /// Получение данных с бд
     coins = _db.getCoins();
@@ -169,7 +173,7 @@ class GameViewModel with ChangeNotifier {
 
   // Проверка слова на корректность
   checkWord({
-    required WordModel word,
+    required WordModel word ,
     required String value,
     required BuildContext ctx,
     bool closeDialogOnComplete = false,
@@ -183,6 +187,8 @@ class GameViewModel with ChangeNotifier {
       _audio.playRightAnswer();
 
       lastGuessedWord = word.word;
+
+      isFirstWordCorrect = _levels.first.data[1].state ==  WordState.correct;
 
       final depthWords = activeLevel.data
           .where((element) => element.depth == word.depth)
